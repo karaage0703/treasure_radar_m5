@@ -7,7 +7,7 @@ M5 Stack Treasure Radar using Bluetooth
 
 ## Setup
 ### Hardware
-- M5 Stack Base / M5 Stack Core2
+- M5 Stack
 - Xiaomi Mi Band4(As a treasure)
 
 Mi Band4 detecting setting must be ON.
