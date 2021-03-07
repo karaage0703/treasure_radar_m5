@@ -27,14 +27,14 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
 void setup() {
   M5.begin();
   // Serial.begin(115200); 
+  M5.Speaker.begin();
   M5.Power.begin();
-
   M5.Lcd.setRotation(1);
   M5.Lcd.setBrightness(brightness);
 
   Serial.println("Scanning...");
 
-
+  // Bluetooth Setup
   BLEDevice::init("");
   pBLEScan = BLEDevice::getScan(); //create new scan
   pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
@@ -43,7 +43,7 @@ void setup() {
   pBLEScan->setWindow(99);  // less or equal setInterval value
 }
 
-void drawScreen() {
+void drawSimple() {
     M5.Lcd.fillScreen(BLACK);
     M5.Lcd.setTextSize(2);
     M5.Lcd.setCursor(0, 0);
@@ -65,13 +65,51 @@ void drawScreen() {
     }
 }
 
+void drawLadar() {
+    if (rssi > -50){
+        M5.Lcd.fillCircle((M5.Lcd.width() - 1)/2, (M5.Lcd.height() - 1)/2, 30, YELLOW);
+        ledcSetup(TONE_PIN_CHANNEL, 8800, 13);
+        ledcWrite(TONE_PIN_CHANNEL, 0x1FF>>(9-7));
+        delay(400);
+        M5.Speaker.mute();
+    }
+
+    if (rssi > -70 && rssi <= -50){
+        M5.Lcd.fillCircle((M5.Lcd.width() - 1)/2, (M5.Lcd.height() - 1)/2, 10, YELLOW);
+        ledcSetup(TONE_PIN_CHANNEL, 4400, 13);
+        ledcWrite(TONE_PIN_CHANNEL, 0x1FF>>(9-5));
+        delay(200);
+        M5.Speaker.mute();
+    }
+
+    if (rssi > -90 && rssi <= -70){
+        M5.Lcd.fillCircle((M5.Lcd.width() - 1)/2, (M5.Lcd.height() - 1)/2, 10, YELLOW);
+        ledcSetup(TONE_PIN_CHANNEL, 2200, 13);
+        ledcWrite(TONE_PIN_CHANNEL, 0x1FF>>(9-3));
+        delay(100);
+        M5.Speaker.mute();
+    }
+
+    if (rssi <= -90){
+        M5.Lcd.fillCircle((M5.Lcd.width() - 1)/2, (M5.Lcd.height() - 1)/2, 5, YELLOW);
+        ledcSetup(TONE_PIN_CHANNEL, 1100, 13);
+        ledcWrite(TONE_PIN_CHANNEL, 0x1FF>>(9-1));
+        delay(50);
+        M5.Speaker.mute();
+    }
+}
+
+
 void loop() {
   // put your main code here, to run repeatedly:
   BLEScanResults foundDevices = pBLEScan->start(scanTime, false);
   Serial.print("Devices found: ");
   Serial.println(foundDevices.getCount());
   Serial.println("Scan done!");
-  drawScreen();
+  M5.Lcd.fillScreen(GREEN);
+  delay(2000);
+//  drawSimple();
+  drawLadar();
   pBLEScan->clearResults();   // delete results fromBLEScan buffer to release memory
   delay(2000);
 }
